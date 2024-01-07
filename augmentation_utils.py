@@ -88,7 +88,7 @@ def check_length(NP_seqs):
         if 7 <= len(seq) <= 100:
             result.append(seq)
     return result
-def combined_aug(NP_family, NP_seqs, p=0.5, num_amplification=60):
+def combined_aug(NP_family, NP_seqs, p=0.5, num_amplification=50):
     amplified_NP_seqs = NP_seqs
     augmented_NP_seqs = NP_seqs
     count = 0
