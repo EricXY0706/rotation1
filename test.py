@@ -51,3 +51,4 @@ df = pd.DataFrame(results)
 df.columns = ['Sequence', 'Family', 'Length']
 df['Family'] = pd.Series(['MergeOthers'] * df.shape[0])
 df.to_csv(r'/home/xuyi/rotation1/datasets/merge.csv', index=False)
+print(1)
