@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 import torch.optim as optim
-from sklearn.metrics import f1_score, accuracy_score, precision_recall_fscore_support
+from sklearn.metrics import f1_score, accuracy_score, precision_recall_fscore_support, recall_score, precision_score, confusion_matrix
 import random
 import time
 from colorama import Fore
@@ -43,8 +43,8 @@ def model(parameters_dict):
     epochs = parameters_dict['epochs']
     batch_size = parameters_dict['batch_size']
     # Loading binary model outputs
-    binary_out_human = torch.load(rf'/home/xuyi/rotation1/binary_embeddings/x_{binary_model_name}_{str(positive_classes-1)}*{str(positive_num)}+merge_{negtive_dataset}.pt').to(device)
-    NP_human_family_index = torch.load(rf'/home/xuyi/rotation1/binary_embeddings/y_{binary_model_name}_{str(positive_classes-1)}*{str(positive_num)}+merge_{negtive_dataset}.pt').to(device)
+    binary_out_human = torch.load(rf'/home/xuyi/rotation1/final_ablation/wo_conv_attn/x_{binary_model_name}_0109_{str(positive_classes)}*{str(positive_num)}_{negtive_dataset}.pt').to(device)
+    NP_human_family_index = torch.load(rf'/home/xuyi/rotation1/final_ablation/wo_conv_attn/y_{binary_model_name}_0109_{str(positive_classes)}*{str(positive_num)}_{negtive_dataset}.pt').to(device)
     # Train & test splitting in every class
     reps_train, reps_test = torch.zeros(1, 512).to(device), torch.zeros(1, 512).to(device)
     target_train, target_test = torch.zeros(1, positive_classes).to(device), torch.zeros(1, positive_classes).to(device)
@@ -93,27 +93,36 @@ def model(parameters_dict):
     macro_f1 = round(f1_score(y_true.cpu(), y_pre.cpu(), average='macro', zero_division=0.0), 4)
     acc = round(accuracy_score(y_true.cpu(), y_pre.cpu()), 4)
     _, _, f1, _ = precision_recall_fscore_support(y_true.cpu(), y_pre.cpu(), average=None, zero_division=0.0)
+    recall = recall_score(y_true.cpu(), y_pre.cpu(), average=None, zero_division=0.0)
+    precision = precision_score(y_true.cpu(), y_pre.cpu(), average=None, zero_division=0.0)
+    confusions = confusion_matrix(y_true.cpu(), y_pre.cpu(), normalize='true')
+    # np.save(rf'/home/xuyi/rotation1/multiple_model_results/confusions.npy', confusions)
     non_zero_f1 = np.round(np.mean(np.array(f1)[np.array(f1) != 0]), 4)
-    # print(f'Micro F1 score: {Fore.RED}{micro_f1}{Fore.RESET}')
-    # print(f'Macro F1 score: {Fore.RED}{macro_f1}{Fore.RESET}')
-    # print(f'Non-zero F1 score: {Fore.RED}{non_zero_f1}{Fore.RESET}')
+    print(f'Micro F1 score: {Fore.RED}{micro_f1}{Fore.RESET}')
+    print(f'Macro F1 score: {Fore.RED}{macro_f1}{Fore.RESET}')
+    print(f'Non-zero F1 score: {Fore.RED}{non_zero_f1}{Fore.RESET}')
     # print(f'Accuracy: {Fore.RED}{acc}{Fore.RESET}')
     # print(f1)
+    # print(recall)
+    # print(precision)
+    # print(confusions)
+    # torch.save(multiple_model.state_dict(), rf'/home/xuyi/rotation1/multiple_model_results/model.pth')
     return micro_f1, macro_f1, non_zero_f1
 if __name__ == '__main__':
     # mF1, MF1, non = [], [], []
-    # for lr in [1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0]:
-    #     set_seed(seed=141)
-    #     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    # for b in range(16, 100):
+    #     set_seed(seed=42)
+    #     print(b)
+    #     device = torch.device('cuda:5' if torch.cuda.is_available() else 'cpu')
     #     params = {
-	# 		"positive_classes": 21,
-	# 		"positive_num": 85,
+	# 		"positive_classes": 20,
+	# 		"positive_num": 90,
 	# 		"negtive_dataset": 'allneg',
-    #         "binary_model_name": 'e100b16_p512k3n2h4_BCESGD',
+    #         "binary_model_name": 'e100b16_p512k3n1h4_BCESGD',
     #         "train_test_ratio": 0.8,
-    #         "learning_rate": lr,
+    #         "learning_rate": 1.5,
     #         "epochs": 80,
-    #         "batch_size": 65
+    #         "batch_size": b
     #     }
     #     micro_f1, macro_f1, non_zero_f1 = model(params)
     #     mF1.append(micro_f1)
@@ -122,16 +131,16 @@ if __name__ == '__main__':
     # print(np.max(np.array(mF1)), np.argmax(np.array(mF1)))
     # print(np.max(np.array(MF1)), np.argmax(np.array(MF1)))
     # print(np.max(np.array(non)), np.argmax(np.array(non)))
-    set_seed(seed=141)
-    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    set_seed(seed=2872) # 2872
+    device = torch.device('cuda:1' if torch.cuda.is_available() else 'cpu')
     params = {
-			"positive_classes": 21,
-			"positive_num": 85,
+			"positive_classes": 20,
+			"positive_num": 90,
 			"negtive_dataset": 'allneg',
-            "binary_model_name": 'e100b16_p512k3n2h4_BCESGD',
+            "binary_model_name": 'e100b16_p512k3n1h4_BCESGD',
             "train_test_ratio": 0.8,
             "learning_rate": 1.5,
             "epochs": 80,
-            "batch_size": 65
+            "batch_size": 69 # 69
     }
     micro_f1, macro_f1, non_zero_f1 = model(params)

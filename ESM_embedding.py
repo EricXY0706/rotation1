@@ -7,11 +7,11 @@ def ESM_embedding(ESM_model_name):
     ESM_model, alphabet = esm.pretrained.esm2_t33_650M_UR50D()
     batch_converter = alphabet.get_batch_converter()
     ESM_model.eval()
-    NP_human_list, NP_others_list, NP_tag, _ = data_loader()
+    NP_human_list, NP_others_list, NP_tag, NP_family_list = data_loader()
     NP_list = NP_human_list
     NP_list.extend(NP_others_list)
     data = []
-    for i in range(len(NP_list)):
+    for i in range(len(NP_human_list)):
         data.append(("protein"+str(i+1), str(NP_list[i])))
     batch_labels, batch_strs, batch_tokens = batch_converter(data)
     batch_lens = (batch_tokens != alphabet.padding_idx).sum(1)
@@ -36,7 +36,7 @@ def ESM_embedding(ESM_model_name):
     #     plt.title(seq)
     #     plt.show()
     print('ESM model embedding finished!')
-    torch.save(token_representations, rf'/home/xuyi/rotation1/ESM_embeddings/tokens/tokens_{ESM_model_name}_20*85+merge_allneg.pt')
-    torch.save(torch.tensor(sequence_length), rf'/home/xuyi/rotation1/ESM_embeddings/seq_length/seq_length_{ESM_model_name}_20*85+merge_allneg.pt')
-    return sequence_representations, NP_tag, torch.tensor(sequence_length)
+    torch.save(token_representations, rf'/home/xuyi/rotation1/ESM_embeddings/tokens/tokens_{ESM_model_name}_0313_25*70_allneg.pt')
+    torch.save(torch.tensor(sequence_length), rf'/home/xuyi/rotation1/ESM_embeddings/seq_length/seq_length_{ESM_model_name}_0313_25*70_allneg.pt')
+    return sequence_representations, NP_tag, torch.tensor(sequence_length), NP_family_list
 ESM_embedding('esm2_t33_650M_UR50D')
